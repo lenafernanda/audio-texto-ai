@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Transcreva aulas, reuniões, podcasts e vídeos em texto organizado com resumo automático."
+    />
+    <title>Texto inteligente — transcrição e resumo</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="hero">
+        <p class="badge">Gratuito · sem cadastro</p>
+        <h1>Transforme áudio e vídeo em texto inteligente.</h1>
+        <p class="lead">Transcreva aulas, reuniões, podcasts e vídeos em segundos.</p>
+      </header>
+
+      <section class="card main-card" aria-label="Entrada de conteúdo">
+        <div class="tabs" role="tablist">
+          <button type="button" class="tab active" data-tab="file" role="tab" aria-selected="true">
+            Enviar arquivo
+          </button>
+          <button type="button" class="tab" data-tab="link" role="tab" aria-selected="false">Colar link</button>
+          <button type="button" class="tab" data-tab="record" role="tab" aria-selected="false">Gravar áudio</button>
+        </div>
+
+        <div class="panels">
+          <div id="panel-file" class="panel active" role="tabpanel">
+            <div id="dropzone" class="dropzone" tabindex="0">
+              <p>Arraste áudio ou vídeo aqui</p>
+              <label class="link-btn">
+                <input
+                  type="file"
+                  id="file-input"
+                  accept=".mp3,.wav,.m4a,.webm,.ogg,.mp4,.mkv,.mov,.avi,video/*,audio/*"
+                  hidden
+                />
+                escolher do dispositivo
+              </label>
+            </div>
+            <p class="hint">Até 25 MB · mp3, wav, m4a, webm, mp4…</p>
+          </div>
+
+          <div id="panel-link" class="panel" role="tabpanel" hidden>
+            <label class="sr-only" for="media-url">Link do vídeo</label>
+            <input
+              type="url"
+              id="media-url"
+              class="url-input"
+              placeholder="Cole o link público (YouTube, Vimeo e outros…)"
+              inputmode="url"
+              autocomplete="url"
+            />
+            <p class="hint">Se o site bloquear, baixe o arquivo e envie na aba “Enviar arquivo”.</p>
+          </div>
+
+          <div id="panel-record" class="panel" role="tabpanel" hidden>
+            <div class="recorder">
+              <button type="button" id="record-btn" class="btn-record">● Gravar</button>
+              <span id="record-timer" class="record-timer">00:00</span>
+            </div>
+            <p id="record-status" class="hint">Grave a aula ou anotação e transcreva em seguida.</p>
+          </div>
+        </div>
+
+        <button type="button" id="btn-transcribe" class="btn-primary">Transcrever</button>
+      </section>
+
+      <section id="progress-section" class="card progress-card hidden" aria-live="polite">
+        <div class="progress-head">
+          <span id="progress-label">Preparando…</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="progress-track">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+      </section>
+
+      <section id="results" class="results hidden" aria-live="polite">
+        <div class="result-tabs" role="tablist">
+          <button type="button" class="rtab active" data-rtab="texto">Texto</button>
+          <button type="button" class="rtab" data-rtab="resumo">Resumo</button>
+          <button type="button" class="rtab" data-rtab="estudo">Para estudo</button>
+        </div>
+
+        <article id="view-texto" class="result-view card">
+          <textarea id="texto" readonly rows="12"></textarea>
+        </article>
+        <article id="view-resumo" class="result-view card hidden">
+          <p id="resumo-text" class="prose"></p>
+          <h3 class="mini-title">Tópicos</h3>
+          <ul id="topicos-list" class="topic-list"></ul>
+          <h3 class="mini-title">Palavras-chave</h3>
+          <div id="keywords" class="tags"></div>
+        </article>
+        <article id="view-estudo" class="result-view card hidden">
+          <pre id="estudo-text" class="study-block"></pre>
+        </article>
+
+        <div class="export-row">
+          <button type="button" class="btn-export" data-export="copy">Copiar</button>
+          <button type="button" class="btn-export" data-export="txt">TXT</button>
+          <button type="button" class="btn-export" data-export="pdf">PDF</button>
+          <button type="button" class="btn-export" data-export="docx">DOCX</button>
+        </div>
+      </section>
+
+      <section id="history" class="card history-card hidden">
+        <h2 class="section-title">Nesta sessão</h2>
+        <ul id="history-list" class="history-list"></ul>
+      </section>
+
+      <details class="card extras">
+        <summary>Downloads de vídeo e áudio (opcional)</summary>
+        <p class="hint">Complemento para links do YouTube. O foco do site é transcrição e resumo.</p>
+        <input
+          type="url"
+          id="download-url"
+          class="url-input"
+          placeholder="Link do YouTube para baixar"
+        />
+        <div class="download-btns">
+          <button type="button" id="dl-video" class="btn-secondary">Baixar vídeo</button>
+          <button type="button" id="dl-audio" class="btn-secondary">Baixar MP3</button>
+        </div>
+      </details>
+
+      <p id="error" class="error hidden" role="alert"></p>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>
