@@ -7,7 +7,7 @@ _model = None
 
 def _model_name() -> str:
     # `small` melhora muito o PT; `medium` exige mais RAM. Evite `tiny` em produção.
-    return os.getenv("WHISPER_MODEL", "small")
+    return os.getenv("WHISPER_MODEL", "tiny")
 
 
 def _initial_prompt() -> str:
