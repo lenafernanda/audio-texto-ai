@@ -138,11 +138,17 @@ async def health():
 @app.post("/transcribe/file")
 async def transcribe_file(request: Request, file: UploadFile = File(...)):
     try:
+        print("PASSO 1 - entrou na rota")
+
         ip = _client_ip(request)
         _enforce_rate_limit(ip)
 
+        print("PASSO 2 - rate limit ok")
+
         filename = file.filename or "gravacao.webm"
         suffix = Path(filename).suffix.lower() or ".webm"
+
+        print("PASSO 3 - arquivo:", filename)
 
         if suffix not in ALLOWED_SUFFIXES:
             raise HTTPException(
@@ -150,19 +156,26 @@ async def transcribe_file(request: Request, file: UploadFile = File(...)):
                 detail="Formato não suportado."
             )
 
-        # salva arquivo
-        input_path = UPLOAD_DIR / filename
+        uploads_dir = Path("uploads")
+        uploads_dir.mkdir(exist_ok=True)
 
-        with open(input_path, "wb") as buffer:
+        file_path = uploads_dir / filename
+
+        print("PASSO 4 - salvando arquivo")
+
+        with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        # processa transcrição
-        resultado = process_audio(str(input_path))
+        print("PASSO 5 - arquivo salvo")
+
+        resultado = process_audio(str(file_path))
+
+        print("PASSO 6 - transcrição concluída")
 
         return resultado
 
     except Exception as e:
-        print("ERRO COMPLETO:", str(e))
+        print("ERRO COMPLETO:", repr(e))
         raise HTTPException(status_code=500, detail=str(e))
 
     dest = UPLOAD_DIR / f"{int(time.time() * 1000)}_{Path(filename).name}"
