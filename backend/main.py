@@ -150,7 +150,16 @@ async def transcribe_file(request: Request, file: UploadFile = File(...)):
                 detail="Formato não suportado."
             )
 
-        return {"ok": True}
+        # salva arquivo
+        input_path = UPLOAD_DIR / filename
+
+        with open(input_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        # processa transcrição
+        resultado = process_audio(str(input_path))
+
+        return resultado
 
     except Exception as e:
         print("ERRO COMPLETO:", str(e))
