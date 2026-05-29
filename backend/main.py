@@ -137,68 +137,49 @@ async def health():
 
 @app.post("/transcribe/file")
 async def transcribe_file(request: Request, file: UploadFile = File(...)):
-    try:
-        print("PASSO 1 - entrou na rota")
+    ip = _client_ip(request)
+    _enforce_rate_limit(ip)
 
-        ip = _client_ip(request)
-        _enforce_rate_limit(ip)
+    filename = file.filename or "gravacao.webm"
+    suffix = Path(filename).suffix.lower() or ".webm"
 
-        print("PASSO 2 - rate limit ok")
-
-        filename = file.filename or "gravacao.webm"
-        suffix = Path(filename).suffix.lower() or ".webm"
-
-        print("PASSO 3 - arquivo:", filename)
-
-        if suffix not in ALLOWED_SUFFIXES:
-            raise HTTPException(
-                status_code=400,
-                detail="Formato não suportado."
-            )
-
-        uploads_dir = Path("uploads")
-        uploads_dir.mkdir(exist_ok=True)
-
-        file_path = uploads_dir / filename
-
-        print("PASSO 4 - salvando arquivo")
-
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
-        print("PASSO 5 - arquivo salvo")
-
-        resultado = process_audio(str(file_path))
-
-        print("PASSO 6 - transcrição concluída")
-
-        return resultado
-
-    except Exception as e:
-        print("ERRO COMPLETO:", repr(e))
-        raise HTTPException(status_code=500, detail=str(e))
+    if suffix not in ALLOWED_SUFFIXES:
+        raise HTTPException(
+            status_code=400,
+            detail="Formato não suportado."
+        )
 
     dest = UPLOAD_DIR / f"{int(time.time() * 1000)}_{Path(filename).name}"
+
     cleanup: list[Path] = []
     size = 0
+
     try:
         with dest.open("wb") as out:
             while True:
                 chunk = await file.read(1024 * 1024)
+
                 if not chunk:
                     break
+
                 size += len(chunk)
+
                 if size > MAX_BYTES:
                     mb = MAX_BYTES // (1024 * 1024)
+
                     raise HTTPException(
                         status_code=413,
                         detail=f"Arquivo muito grande. O limite é {mb} MB.",
                     )
+
                 out.write(chunk)
 
         audio_path, cleanup = await _prepare_audio_from_upload(dest, suffix)
+
         data = await _transcribe_path(audio_path)
+
         return _json_result(data)
+
     finally:
         for p in cleanup:
             if p.exists():
@@ -206,12 +187,9 @@ async def transcribe_file(request: Request, file: UploadFile = File(...)):
                     p.unlink()
                 except OSError:
                     pass
-
-
 class TranscribeUrlBody(BaseModel):
     url: str = Field(..., min_length=10, max_length=2048)
-
-
+    
 @app.post("/transcribe/url")
 async def transcribe_url(request: Request, body: TranscribeUrlBody):
     ip = _client_ip(request)
